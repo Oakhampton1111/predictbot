@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Error Alert</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+    <div style="background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px;">⚠️ Service Error</h1>
+        <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.95;">System Component Issue Detected</p>
+    </div>
+    
+    <div style="background: #fff3cd; padding: 20px; border-left: 4px solid #fd7e14; border-right: 1px solid #dee2e6;">
+        <p style="margin: 0; font-weight: bold; color: #856404;">
+            🔧 A service error has been detected that may require attention.
+        </p>
+    </div>
+    
+    <div style="background: white; padding: 25px; border: 1px solid #dee2e6; border-top: none;">
+        <h2 style="color: #fd7e14; margin-top: 0; border-bottom: 2px solid #fd7e14; padding-bottom: 10px;">
+            Error Details
+        </h2>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; width: 40%;">Service Name:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; color: #fd7e14;">
+                    ${meta_service_name}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Instance ID:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-family: monospace; background: #f8f9fa;">
+                    ${meta_instance_id}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Error Type:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-family: monospace;">
+                    ${meta_error_type}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Severity:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                    ${meta_severity}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Is Fatal:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                    ${meta_is_fatal}
+                </td>
+            </tr>
+        </table>
+        
+        <h3 style="color: #333; margin-top: 25px;">Error Message</h3>
+        <div style="background: #f8d7da; padding: 15px; border-radius: 4px; border-left: 4px solid #dc3545;">
+            <p style="margin: 0; font-family: monospace; color: #721c24; word-break: break-word;">
+                ${meta_error_message}
+            </p>
+        </div>
+        
+        <h3 style="color: #333; margin-top: 25px;">Stack Trace</h3>
+        <div style="background: #2d2d2d; padding: 15px; border-radius: 4px; overflow-x: auto;">
+            <pre style="margin: 0; font-family: 'Courier New', monospace; font-size: 12px; color: #f8f8f2; white-space: pre-wrap; word-break: break-word;">${meta_error_stack}</pre>
+        </div>
+        
+        <h3 style="color: #333; margin-top: 25px;">Impact Assessment</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 150px; background: #f8f9fa; padding: 15px; border-radius: 4px; text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 5px;">🔄</div>
+                <div style="font-weight: bold;">Service Status</div>
+                <div style="color: #666; font-size: 14px;">Check Required</div>
+            </div>
+            <div style="flex: 1; min-width: 150px; background: #f8f9fa; padding: 15px; border-radius: 4px; text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 5px;">📊</div>
+                <div style="font-weight: bold;">Trading Impact</div>
+                <div style="color: #666; font-size: 14px;">Evaluate</div>
+            </div>
+            <div style="flex: 1; min-width: 150px; background: #f8f9fa; padding: 15px; border-radius: 4px; text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 5px;">🔧</div>
+                <div style="font-weight: bold;">Action</div>
+                <div style="color: #666; font-size: 14px;">May Be Required</div>
+            </div>
+        </div>
+        
+        <h3 style="color: #333; margin-top: 25px;">Recommended Actions</h3>
+        <ol style="color: #555; padding-left: 20px;">
+            <li style="margin-bottom: 10px;">Check service logs for additional context</li>
+            <li style="margin-bottom: 10px;">Verify service health and connectivity</li>
+            <li style="margin-bottom: 10px;">Review recent configuration changes</li>
+            <li style="margin-bottom: 10px;">Restart service if necessary</li>
+            <li style="margin-bottom: 10px;">Monitor for recurring errors</li>
+        </ol>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 8px 8px;">
+        <table style="width: 100%; font-size: 13px; color: #666;">
+            <tr>
+                <td><strong>Alert ID:</strong> ${alert_id}</td>
+                <td style="text-align: right;"><strong>Time:</strong> ${timestamp}</td>
+            </tr>
+            <tr>
+                <td><strong>Source:</strong> ${source}</td>
+                <td style="text-align: right;"><strong>Severity:</strong> ${severity_upper}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+        <p>This is an automated alert from PredictBot Trading System.</p>
+        <p>Do not reply to this email.</p>
+    </div>
+</body>
+</html>

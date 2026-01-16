@@ -1,0 +1,43 @@
+# Git Submodules Configuration
+# These are the open-source repositories integrated into the trading bot stack
+# Updated with verified working repository URLs
+
+[submodule "modules/polymarket_arb"]
+    path = modules/polymarket_arb
+    url = https://github.com/terauss/Polymarket-Kalshi-Arbitrage-bot.git
+    branch = main
+
+[submodule "modules/polymarket_mm"]
+    path = modules/polymarket_mm
+    url = https://github.com/lorine93s/polymarket-market-maker-bot.git
+    branch = main
+
+[submodule "modules/polymarket_spike"]
+    path = modules/polymarket_spike
+    url = https://github.com/Trust412/Polymarket-spike-bot-v1.git
+    branch = main
+
+[submodule "modules/kalshi_ai"]
+    path = modules/kalshi_ai
+    url = https://github.com/ryanfrigo/kalshi-ai-trading-bot.git
+    branch = main
+
+[submodule "modules/manifold_mm"]
+    path = modules/manifold_mm
+    url = https://github.com/manifoldmarkets/market-maker.git
+    branch = main
+
+[submodule "modules/mcp_server"]
+    path = modules/mcp_server
+    url = https://github.com/caiovicentino/polymarket-mcp-server.git
+    branch = main
+
+[submodule "modules/polyseer"]
+    path = modules/polyseer
+    url = https://github.com/yorkeccak/Polyseer.git
+    branch = main
+
+[submodule "modules/predmarket"]
+    path = modules/predmarket
+    url = https://github.com/ashercn97/predmarket.git
+    branch = main

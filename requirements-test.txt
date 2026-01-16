@@ -1,0 +1,36 @@
+# Test Dependencies for PredictBot Stack
+# Install with: pip install -r requirements-test.txt
+
+# Core testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+pytest-timeout>=2.2.0
+pytest-xdist>=3.5.0  # Parallel test execution
+
+# Mocking
+pytest-mock>=3.12.0
+aioresponses>=0.7.6  # Async HTTP mocking
+fakeredis>=2.20.0    # Redis mocking
+
+# Code quality
+ruff>=0.1.0
+black>=24.0.0
+isort>=5.13.0
+mypy>=1.8.0
+
+# Security scanning
+bandit>=1.7.0
+safety>=2.3.0
+
+# Coverage
+coverage[toml]>=7.4.0
+
+# Type stubs
+types-redis>=4.6.0
+types-aiofiles>=23.2.0
+
+# Test utilities
+factory-boy>=3.3.0   # Test data factories
+hypothesis>=6.92.0   # Property-based testing
+freezegun>=1.4.0     # Time mocking

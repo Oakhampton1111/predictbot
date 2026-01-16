@@ -1,0 +1,38 @@
+{
+  "start_time": "2026-01-16T11:37:01.729513",
+  "end_time": "2026-01-16T11:38:01.435604",
+  "markets_analyzed": 10,
+  "markets_with_edge": 2,
+  "buy_decisions": 2,
+  "skip_decisions": 8,
+  "trades": [
+    {
+      "market_id": "KXNFL-SUPERBOWL-KC",
+      "title": "Will Kansas City Chiefs win Super Bowl LIX?",
+      "side": "YES",
+      "entry_price": 22,
+      "quantity": 2272,
+      "position_value": 499.84,
+      "confidence": 0.75,
+      "reasoning": "Chiefs are defending champions with elite QB Mahomes, top-tier coaching staff, and proven playoff experience. They're currently leading AFC West and have consistently performed in high-pressure situat",
+      "timestamp": "2026-01-16T11:37:26.604510"
+    },
+    {
+      "market_id": "KXSPORTS-NBA-CELTICS",
+      "title": "Will Boston Celtics win 2025 NBA Championship?",
+      "side": "YES",
+      "entry_price": 28,
+      "quantity": 1785,
+      "position_value": 499.80000000000007,
+      "confidence": 0.75,
+      "reasoning": "Celtics are defending champions with strong roster continuity, elite defense, and proven playoff experience. Tatum and Brown in their prime, solid depth, and Mazzulla's system. Market undervaluing the",
+      "timestamp": "2026-01-16T11:38:00.921414"
+    }
+  ],
+  "total_capital_deployed": 999.6400000000001,
+  "total_ai_cost": 0.035684999999999995,
+  "ai_requests": 10,
+  "avg_confidence": 0.75,
+  "avg_edge": 0.0,
+  "errors": []
+}

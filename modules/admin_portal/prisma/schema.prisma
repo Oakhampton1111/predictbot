@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  username      String    @unique
+  passwordHash  String
+  role          Role      @default(VIEWER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLogin     DateTime?
+  auditLogs     AuditLog[]
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  VIEWER
+}
+
+// Audit log for tracking all user actions
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  action      String
+  resource    String
+  details     Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+// Configuration snapshots for version control
+model ConfigSnapshot {
+  id          String   @id @default(cuid())
+  configType  String
+  configData  Json
+  createdBy   String
+  createdAt   DateTime @default(now())
+  isActive    Boolean  @default(false)
+
+  @@index([configType])
+  @@index([createdAt])
+}
+
+// Emergency action log
+model EmergencyAction {
+  id          String   @id @default(cuid())
+  actionType  String
+  triggeredBy String
+  reason      String?
+  status      String
+  result      Json?
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  @@index([createdAt])
+  @@index([actionType])
+}

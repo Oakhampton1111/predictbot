@@ -1,0 +1,414 @@
+# =============================================================================
+# PredictBot Stack - Strategy Configuration
+# =============================================================================
+# Copy this file to config.yml and customize as needed
+# This file contains all strategy parameters and market configurations
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Global Settings
+# -----------------------------------------------------------------------------
+global:
+  # Timezone for all time-based operations
+  timezone: "UTC"
+  
+  # How often to refresh market data (seconds)
+  data_refresh_interval: 5
+  
+  # Enable verbose logging for debugging
+  debug_mode: false
+  
+  # Bankroll allocation (total capital across all strategies)
+  total_bankroll: 1000.0
+
+# -----------------------------------------------------------------------------
+# Arbitrage Strategy Configuration
+# -----------------------------------------------------------------------------
+arbitrage:
+  enabled: true
+  
+  # Minimum profit percentage to execute (after fees)
+  # 0.02 = 2% minimum edge required
+  min_profit: 0.02
+  
+  # Maximum capital to deploy on a single arbitrage trade
+  max_trade_size: 300
+  
+  # Capital allocation for arbitrage strategy
+  capital_allocation: 500
+  
+  # Platform pairs to monitor for arbitrage
+  # Options: polymarket-kalshi, polymarket-predictit, kalshi-predictit
+  platform_pairs:
+    - polymarket-kalshi
+    # - polymarket-predictit  # Uncomment to enable
+    # - kalshi-predictit      # Uncomment to enable
+  
+  # Market discovery mode
+  # auto: Automatically find matching markets
+  # manual: Only use markets defined in markets.yml
+  discovery_mode: auto
+  
+  # Execution settings
+  execution:
+    # Maximum slippage tolerance (0.01 = 1%)
+    max_slippage: 0.01
+    
+    # Retry attempts for failed orders
+    max_retries: 3
+    
+    # Delay between retry attempts (milliseconds)
+    retry_delay_ms: 500
+    
+    # Concurrent execution of both legs
+    concurrent_execution: true
+
+# -----------------------------------------------------------------------------
+# Market Making Strategy Configuration
+# -----------------------------------------------------------------------------
+market_making:
+  # Polymarket Market Making
+  polymarket:
+    enabled: true
+    
+    # Capital allocation for Polymarket MM
+    capital_allocation: 200
+    
+    # Target spread in basis points (500 = 5%)
+    spread_bps: 500
+    
+    # Order size per side (USD)
+    order_size: 50
+    
+    # Maximum inventory per outcome (USD)
+    inventory_limit: 500
+    
+    # Markets to make markets on
+    # Use "auto" for top N by volume, or list specific market IDs
+    markets: "auto"
+    
+    # If auto, how many top markets to select
+    auto_market_count: 3
+    
+    # Minimum daily volume to consider a market (USD)
+    min_daily_volume: 10000
+    
+    # Quote refresh interval (seconds)
+    quote_refresh_interval: 10
+    
+    # Inventory rebalancing
+    rebalance:
+      enabled: true
+      # Trigger rebalance when inventory imbalance exceeds this ratio
+      imbalance_threshold: 0.7
+      # Target inventory ratio (0.5 = 50/50 YES/NO)
+      target_ratio: 0.5
+  
+  # Manifold Market Making
+  manifold:
+    enabled: true
+    
+    # Capital allocation (in Mana)
+    capital_allocation: 1000
+    
+    # Order size per side (Mana)
+    order_size: 100
+    
+    # Markets to make markets on
+    # "all" for all markets, or list specific slugs
+    markets: "all"
+    
+    # EMA parameters for price tracking
+    ema:
+      # EMA period for probability tracking
+      period: 20
+      # Variance multiplier for spread calculation
+      variance_multiplier: 1.5
+    
+    # Minimum spread to maintain
+    min_spread: 0.02
+    
+    # Categories to focus on (empty = all categories)
+    categories: []
+
+# -----------------------------------------------------------------------------
+# Spike Trading Strategy Configuration
+# -----------------------------------------------------------------------------
+spike_trading:
+  enabled: true
+  
+  # Capital allocation for spike trading
+  capital_allocation: 100
+  
+  # Price movement threshold to trigger spike detection
+  # 0.05 = 5% price move triggers spike
+  sensitivity: 0.05
+  
+  # Time window for spike detection (seconds)
+  detection_window: 60
+  
+  # Strategy type
+  # mean_reversion: Bet against the spike (fade)
+  # momentum: Bet with the spike (chase)
+  # hybrid: Use AI to decide per-spike
+  strategy: "mean_reversion"
+  
+  # Maximum bet size per spike trade (USD)
+  max_size: 100
+  
+  # Cooldown between trades on same market (seconds)
+  cooldown: 60
+  
+  # Platforms to monitor for spikes
+  platforms:
+    - polymarket
+    - kalshi
+  
+  # Exit strategy
+  exit:
+    # Take profit threshold (0.03 = 3% profit)
+    take_profit: 0.03
+    # Stop loss threshold (0.05 = 5% loss)
+    stop_loss: 0.05
+    # Maximum hold time (seconds)
+    max_hold_time: 3600
+  
+  # Volume spike detection
+  volume_spike:
+    enabled: true
+    # Multiplier of average volume to trigger
+    threshold_multiplier: 3.0
+
+# -----------------------------------------------------------------------------
+# AI Trading Strategy Configuration
+# -----------------------------------------------------------------------------
+ai_trading:
+  enabled: true
+  
+  # Capital allocation for AI trading
+  capital_allocation: 200
+  
+  # AI model configuration
+  model:
+    # Primary model: openai:gpt-4, openai:gpt-3.5-turbo, anthropic:claude-3
+    primary: "openai:gpt-4"
+    # Fallback model for cost savings or rate limits
+    fallback: "openai:gpt-3.5-turbo"
+    # Temperature for LLM responses (0.0-1.0)
+    temperature: 0.3
+    # Maximum tokens per response
+    max_tokens: 2000
+  
+  # Market scanning configuration
+  scanning:
+    # How often to scan markets (seconds)
+    interval: 300
+    # Maximum markets to analyze per scan
+    max_markets_per_scan: 20
+    # Platforms to scan
+    platforms:
+      - kalshi
+      - polymarket
+      - manifold
+  
+  # Trading thresholds
+  thresholds:
+    # Minimum confidence to execute trade (0.6 = 60%)
+    min_confidence: 0.6
+    # Minimum edge (AI probability - market probability)
+    min_edge: 0.05
+    # Maximum bet size (USD)
+    max_bet: 100
+  
+  # Multi-agent framework configuration
+  agents:
+    forecaster:
+      enabled: true
+      # Use external data sources
+      use_news: true
+      use_polyseer: true
+    critic:
+      enabled: true
+      # Require critic approval before trading
+      require_approval: true
+    trader:
+      enabled: true
+      # Position sizing method: kelly, fixed, fractional
+      sizing_method: "kelly"
+      # Kelly fraction (0.25 = quarter Kelly for safety)
+      kelly_fraction: 0.25
+  
+  # Polyseer integration
+  polyseer:
+    enabled: false
+    # Cache research results (seconds)
+    cache_ttl: 3600
+  
+  # News and external data
+  external_data:
+    # News API integration
+    news_enabled: false
+    news_api_key: ""
+    # Social media monitoring
+    social_enabled: false
+  
+  # Cost management
+  cost_management:
+    # Maximum daily API spend (USD)
+    max_daily_spend: 10.0
+    # Track and log all API costs
+    track_costs: true
+
+# -----------------------------------------------------------------------------
+# Risk Management Configuration
+# -----------------------------------------------------------------------------
+risk_management:
+  # Global risk limits
+  global:
+    # Maximum daily loss before shutdown (USD)
+    max_daily_loss: 100.0
+    # Maximum total position (USD)
+    max_total_position: 1000.0
+    # Maximum position per market (USD)
+    max_position_per_market: 200.0
+  
+  # Circuit breaker configuration
+  circuit_breaker:
+    enabled: true
+    # Consecutive failures to trigger
+    failure_threshold: 5
+    # Cooldown period (seconds)
+    cooldown_period: 300
+    # Auto-reset after cooldown
+    auto_reset: true
+  
+  # Per-strategy limits
+  strategy_limits:
+    arbitrage:
+      max_concurrent_trades: 3
+      max_daily_trades: 50
+    market_making:
+      max_open_orders: 10
+      max_inventory_value: 500
+    spike_trading:
+      max_daily_trades: 20
+      max_concurrent_positions: 2
+    ai_trading:
+      max_daily_trades: 10
+      max_concurrent_positions: 3
+  
+  # Position monitoring
+  monitoring:
+    # How often to check positions (seconds)
+    check_interval: 30
+    # Alert on large position changes
+    alert_threshold: 0.1
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Log format: json, text
+  format: "text"
+  
+  # Log file settings
+  file:
+    enabled: true
+    path: "./logs"
+    # Rotate logs daily
+    rotation: "daily"
+    # Keep logs for N days
+    retention_days: 30
+  
+  # Console output
+  console:
+    enabled: true
+    # Colorized output
+    colorize: true
+  
+  # Per-module log levels (optional overrides)
+  modules:
+    arbitrage: "INFO"
+    market_making: "INFO"
+    spike_trading: "INFO"
+    ai_trading: "DEBUG"
+    risk_manager: "INFO"
+
+# -----------------------------------------------------------------------------
+# Monitoring and Analytics Configuration
+# -----------------------------------------------------------------------------
+monitoring:
+  # Performance tracking
+  performance:
+    enabled: true
+    # Track PnL per strategy
+    track_pnl: true
+    # Track win/loss ratios
+    track_win_rate: true
+    # Export interval (seconds)
+    export_interval: 3600
+  
+  # Prometheus metrics
+  prometheus:
+    enabled: false
+    port: 9090
+  
+  # Health checks
+  health_check:
+    enabled: true
+    # Health check endpoint port
+    port: 8080
+    # Check interval (seconds)
+    interval: 60
+  
+  # Alerts
+  alerts:
+    # Alert on circuit breaker trigger
+    on_circuit_breaker: true
+    # Alert on daily loss limit
+    on_loss_limit: true
+    # Alert on strategy errors
+    on_error: true
+
+# -----------------------------------------------------------------------------
+# Platform-Specific Overrides
+# -----------------------------------------------------------------------------
+platforms:
+  polymarket:
+    # Gas price settings for Polygon
+    gas:
+      # Maximum gas price (gwei)
+      max_gas_price: 100
+      # Gas price strategy: fast, standard, slow
+      strategy: "standard"
+    # Order settings
+    orders:
+      # Minimum order size (USD)
+      min_order_size: 1.0
+  
+  kalshi:
+    # API rate limiting
+    rate_limit:
+      # Requests per minute
+      requests_per_minute: 60
+    # Order settings
+    orders:
+      min_order_size: 1.0
+  
+  manifold:
+    # API rate limiting
+    rate_limit:
+      requests_per_minute: 100
+    # Order settings
+    orders:
+      min_order_size: 1.0
+  
+  predictit:
+    # PredictIt-specific settings
+    # Note: Limited automation support
+    enabled: false
+    # Maximum investment per market (PredictIt limit)
+    max_per_market: 850

@@ -1,0 +1,167 @@
+# =============================================================================
+# Prometheus Configuration for PredictBot Stack
+# =============================================================================
+# This configuration defines scrape targets for all PredictBot services
+# and sets up alerting rules for critical events.
+# =============================================================================
+
+global:
+  scrape_interval: 15s          # How often to scrape targets
+  evaluation_interval: 15s      # How often to evaluate rules
+  scrape_timeout: 10s           # Timeout for scrape requests
+  
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'predictbot-stack'
+    environment: 'production'
+
+# =============================================================================
+# Alertmanager Configuration (optional - for future alerting)
+# =============================================================================
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# =============================================================================
+# Rule Files (for recording rules and alerts)
+# =============================================================================
+rule_files:
+  # - /etc/prometheus/rules/*.yml
+
+# =============================================================================
+# Scrape Configurations
+# =============================================================================
+scrape_configs:
+  
+  # ---------------------------------------------------------------------------
+  # Prometheus Self-Monitoring
+  # ---------------------------------------------------------------------------
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          component: 'monitoring'
+
+  # ---------------------------------------------------------------------------
+  # Orchestrator Service
+  # ---------------------------------------------------------------------------
+  - job_name: 'orchestrator'
+    static_configs:
+      - targets: ['orchestrator:8080']
+        labels:
+          service: 'orchestrator'
+          component: 'core'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # ---------------------------------------------------------------------------
+  # Kalshi AI Trading Bot
+  # ---------------------------------------------------------------------------
+  - job_name: 'kalshi-ai'
+    static_configs:
+      - targets: ['kalshi-ai:8000']
+        labels:
+          service: 'kalshi-ai'
+          component: 'trading'
+          strategy: 'ai'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # ---------------------------------------------------------------------------
+  # MCP Server
+  # ---------------------------------------------------------------------------
+  - job_name: 'mcp-server'
+    static_configs:
+      - targets: ['mcp-server:3000']
+        labels:
+          service: 'mcp-server'
+          component: 'ai'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # ---------------------------------------------------------------------------
+  # Polyseer Research Assistant
+  # ---------------------------------------------------------------------------
+  - job_name: 'polyseer'
+    static_configs:
+      - targets: ['polyseer:3001']
+        labels:
+          service: 'polyseer'
+          component: 'research'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL (via postgres_exporter if added)
+  # ---------------------------------------------------------------------------
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+  #       labels:
+  #         service: 'postgres'
+  #         component: 'database'
+
+  # ---------------------------------------------------------------------------
+  # Redis (via redis_exporter if added)
+  # ---------------------------------------------------------------------------
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+  #       labels:
+  #         service: 'redis'
+  #         component: 'cache'
+
+  # ---------------------------------------------------------------------------
+  # Loki (Log Aggregation)
+  # ---------------------------------------------------------------------------
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+        labels:
+          service: 'loki'
+          component: 'monitoring'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # ---------------------------------------------------------------------------
+  # Docker Container Metrics (via cAdvisor if added)
+  # ---------------------------------------------------------------------------
+  # - job_name: 'cadvisor'
+  #   static_configs:
+  #     - targets: ['cadvisor:8080']
+  #       labels:
+  #         component: 'infrastructure'
+  #   metrics_path: '/metrics'
+  #   scrape_interval: 15s
+
+  # ---------------------------------------------------------------------------
+  # Node Exporter (Host Metrics - if added)
+  # ---------------------------------------------------------------------------
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+  #       labels:
+  #         component: 'infrastructure'
+
+# =============================================================================
+# Remote Write Configuration (optional - for long-term storage)
+# =============================================================================
+# remote_write:
+#   - url: "http://remote-storage:9201/write"
+#     remote_timeout: 30s
+#     queue_config:
+#       capacity: 10000
+#       max_shards: 50
+#       max_samples_per_send: 5000
+
+# =============================================================================
+# Remote Read Configuration (optional - for querying remote storage)
+# =============================================================================
+# remote_read:
+#   - url: "http://remote-storage:9201/read"
+#     remote_timeout: 1m

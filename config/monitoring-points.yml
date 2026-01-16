@@ -1,0 +1,351 @@
+# =============================================================================
+# PredictBot Stack - Critical Junction Monitoring Points
+# =============================================================================
+# This file defines critical junctions in the trading system that require
+# special monitoring, logging, and alerting attention.
+#
+# Each critical junction represents a significant event that should be:
+# - Logged with structured data for analysis
+# - Tracked with Prometheus metrics
+# - Potentially trigger alerts
+# =============================================================================
+
+# Version of this configuration
+version: "1.0"
+
+# =============================================================================
+# Critical Junction Definitions
+# =============================================================================
+critical_junctions:
+
+  # ---------------------------------------------------------------------------
+  # Trading Events
+  # ---------------------------------------------------------------------------
+  - name: trade_execution
+    description: When a trade is executed on any platform
+    log_level: INFO
+    metrics:
+      - predictbot_trades_total
+      - predictbot_trade_latency_seconds
+    labels:
+      - platform
+      - market
+      - side
+      - strategy
+    alert: false
+    retention_days: 90
+
+  - name: position_opened
+    description: New position opened on any platform
+    log_level: INFO
+    metrics:
+      - predictbot_positions_opened_total
+      - predictbot_positions_open_total
+    labels:
+      - platform
+      - market
+      - strategy
+    alert: false
+    retention_days: 90
+
+  - name: position_closed
+    description: Position closed (profit or loss)
+    log_level: INFO
+    metrics:
+      - predictbot_positions_closed_total
+      - predictbot_pnl_current_usd
+    labels:
+      - platform
+      - market
+      - strategy
+      - result
+    alert: false
+    retention_days: 90
+
+  # ---------------------------------------------------------------------------
+  # AI/ML Events
+  # ---------------------------------------------------------------------------
+  - name: ai_decision
+    description: When AI makes a trading decision
+    log_level: INFO
+    metrics:
+      - predictbot_ai_decisions_total
+      - predictbot_ai_confidence
+    labels:
+      - model
+      - action
+      - market
+    alert: false
+    retention_days: 30
+
+  - name: ai_forecast
+    description: When AI generates a market forecast
+    log_level: DEBUG
+    metrics:
+      - predictbot_forecasts_total
+      - predictbot_ai_forecast_accuracy
+    labels:
+      - model
+      - market_type
+    alert: false
+    retention_days: 30
+
+  - name: llm_api_call
+    description: External LLM API call made
+    log_level: DEBUG
+    metrics:
+      - predictbot_llm_calls_total
+      - predictbot_llm_latency_seconds
+      - predictbot_llm_tokens_total
+    labels:
+      - model
+      - endpoint
+    alert: false
+    retention_days: 7
+
+  # ---------------------------------------------------------------------------
+  # Risk Management Events (CRITICAL)
+  # ---------------------------------------------------------------------------
+  - name: circuit_breaker_trigger
+    description: When circuit breaker activates due to failures
+    log_level: CRITICAL
+    metrics:
+      - predictbot_circuit_breaker_triggers_total
+      - predictbot_circuit_breaker_active
+    labels:
+      - reason
+    alert: true
+    alert_channels:
+      - slack
+      - email
+    alert_severity: critical
+    retention_days: 365
+
+  - name: daily_loss_limit
+    description: Daily loss limit reached - trading halted
+    log_level: CRITICAL
+    metrics:
+      - predictbot_loss_limit_triggers_total
+      - predictbot_pnl_daily_usd
+    labels:
+      - limit_type
+    alert: true
+    alert_channels:
+      - slack
+      - email
+      - pagerduty
+    alert_severity: critical
+    retention_days: 365
+
+  - name: position_limit_reached
+    description: Maximum position limit reached
+    log_level: WARNING
+    metrics:
+      - predictbot_positions_open_total
+      - predictbot_position_value_usd
+    labels:
+      - platform
+    alert: true
+    alert_channels:
+      - slack
+    alert_severity: warning
+    retention_days: 90
+
+  # ---------------------------------------------------------------------------
+  # API/External Service Events
+  # ---------------------------------------------------------------------------
+  - name: api_error
+    description: External API error (Polymarket, Kalshi, etc.)
+    log_level: ERROR
+    metrics:
+      - predictbot_api_errors_total
+      - predictbot_errors_total
+    labels:
+      - api_name
+      - endpoint
+      - error_code
+    alert: true
+    alert_channels:
+      - slack
+    alert_severity: warning
+    alert_threshold:
+      count: 5
+      window: 5m
+    retention_days: 30
+
+  - name: api_rate_limit
+    description: API rate limit hit
+    log_level: WARNING
+    metrics:
+      - predictbot_api_errors_total
+    labels:
+      - api_name
+    alert: true
+    alert_channels:
+      - slack
+    alert_severity: warning
+    retention_days: 30
+
+  # ---------------------------------------------------------------------------
+  # Service Lifecycle Events
+  # ---------------------------------------------------------------------------
+  - name: service_start
+    description: Service started successfully
+    log_level: INFO
+    metrics:
+      - predictbot_uptime_seconds
+    labels:
+      - service
+      - version
+    alert: false
+    retention_days: 90
+
+  - name: service_stop
+    description: Service stopping (graceful or error)
+    log_level: INFO
+    metrics:
+      - predictbot_uptime_seconds
+    labels:
+      - service
+      - reason
+    alert: true
+    alert_channels:
+      - slack
+    alert_severity: warning
+    retention_days: 90
+
+  - name: health_check_failed
+    description: Health check failed for a component
+    log_level: WARNING
+    metrics:
+      - predictbot_health_status
+      - predictbot_errors_total
+    labels:
+      - service
+      - component
+    alert: true
+    alert_channels:
+      - slack
+    alert_severity: warning
+    alert_threshold:
+      count: 3
+      window: 1m
+    retention_days: 30
+
+  - name: config_reload
+    description: Configuration reloaded
+    log_level: INFO
+    metrics: []
+    labels:
+      - service
+    alert: false
+    retention_days: 30
+
+# =============================================================================
+# Alert Configuration
+# =============================================================================
+alerting:
+  # Default alert channels
+  default_channels:
+    - slack
+  
+  # Severity levels and their behaviors
+  severity_levels:
+    critical:
+      notify_immediately: true
+      repeat_interval: 5m
+      escalate_after: 15m
+    
+    warning:
+      notify_immediately: false
+      repeat_interval: 30m
+      escalate_after: 2h
+    
+    info:
+      notify_immediately: false
+      repeat_interval: 1h
+      escalate_after: null
+
+  # Quiet hours (no non-critical alerts)
+  quiet_hours:
+    enabled: false
+    start: "22:00"
+    end: "08:00"
+    timezone: "UTC"
+    allow_critical: true
+
+# =============================================================================
+# Metric Aggregation Rules
+# =============================================================================
+aggregation:
+  # How often to aggregate metrics
+  interval: 1m
+  
+  # Metrics to pre-aggregate for dashboards
+  rules:
+    - name: trades_per_minute
+      metric: predictbot_trades_total
+      function: rate
+      window: 1m
+    
+    - name: pnl_change_rate
+      metric: predictbot_pnl_current_usd
+      function: delta
+      window: 5m
+    
+    - name: error_rate
+      metric: predictbot_errors_total
+      function: rate
+      window: 5m
+    
+    - name: ai_decision_rate
+      metric: predictbot_ai_decisions_total
+      function: rate
+      window: 1h
+
+# =============================================================================
+# Log Retention Policies
+# =============================================================================
+retention:
+  # Default retention for all logs
+  default_days: 30
+  
+  # Override by log level
+  by_level:
+    DEBUG: 7
+    INFO: 30
+    WARNING: 90
+    ERROR: 180
+    CRITICAL: 365
+  
+  # Override by junction (takes precedence)
+  # Defined in each junction above
+
+# =============================================================================
+# Dashboard Panels
+# =============================================================================
+# These define which panels should be created in Grafana for each junction
+dashboard_panels:
+  trade_execution:
+    - type: timeseries
+      title: "Trades Over Time"
+      metric: predictbot_trades_total
+    - type: stat
+      title: "Total Trades Today"
+      metric: increase(predictbot_trades_total[24h])
+  
+  circuit_breaker_trigger:
+    - type: stat
+      title: "Circuit Breaker Status"
+      metric: predictbot_circuit_breaker_active
+    - type: timeseries
+      title: "Circuit Breaker Triggers"
+      metric: predictbot_circuit_breaker_triggers_total
+  
+  daily_loss_limit:
+    - type: gauge
+      title: "Daily P&L vs Limit"
+      metric: predictbot_pnl_daily_usd
+    - type: stat
+      title: "Loss Limit Triggers"
+      metric: predictbot_loss_limit_triggers_total

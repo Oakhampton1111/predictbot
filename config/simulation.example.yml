@@ -1,0 +1,151 @@
+# =============================================================================
+# PredictBot Simulation Configuration
+# =============================================================================
+# This file configures the backtesting and paper trading simulation system.
+# Copy to simulation.yml and customize for your needs.
+# =============================================================================
+
+simulation:
+  # Mode: backtest, paper, or sandbox
+  mode: "paper"
+  
+  # ---------------------------------------------------------------------------
+  # Historical Backtesting Configuration
+  # ---------------------------------------------------------------------------
+  backtest:
+    # Date range for backtesting
+    start_date: "2024-01-01"
+    end_date: "2024-12-31"
+    
+    # Starting capital
+    initial_capital: 10000
+    
+    # Data source: historical_db, csv, or api
+    data_source: "historical_db"
+    
+    # Path to data files (if using csv)
+    # data_path: "./data/historical"
+    
+    # Platforms to include
+    platforms:
+      - polymarket
+      - kalshi
+    
+    # Simulation time step in minutes
+    time_step_minutes: 5
+    
+    # Record equity curve every N minutes
+    record_equity_interval: 60
+  
+  # ---------------------------------------------------------------------------
+  # Paper Trading Configuration
+  # ---------------------------------------------------------------------------
+  paper_trading:
+    # Starting capital
+    initial_capital: 10000
+    
+    # Platforms to trade on
+    platforms:
+      - polymarket
+      - kalshi
+    
+    # Use real-time data feeds
+    real_time_data: true
+    
+    # Data refresh interval in seconds
+    data_refresh_seconds: 5
+    
+    # Record equity every N seconds
+    record_equity_interval: 60
+  
+  # ---------------------------------------------------------------------------
+  # Sandbox Mode Configuration (Platform Demo Accounts)
+  # ---------------------------------------------------------------------------
+  sandbox:
+    # Kalshi demo account credentials
+    # kalshi_demo_api_key: "${KALSHI_DEMO_API_KEY}"
+    # kalshi_demo_api_secret: "${KALSHI_DEMO_API_SECRET}"
+    
+    # Use Polymarket testnet (Polygon Mumbai)
+    polymarket_testnet: true
+    polymarket_testnet_rpc: "https://rpc-mumbai.maticvigil.com"
+    
+    # Starting capital for simulation
+    initial_capital: 10000
+  
+  # ---------------------------------------------------------------------------
+  # Simulated Exchange Configuration
+  # ---------------------------------------------------------------------------
+  exchange:
+    # Fill model configuration
+    fill_model:
+      # Type: basic or realistic
+      type: "realistic"
+      
+      # Probability that a limit order fills at limit price
+      prob_fill_on_limit: 0.75
+      
+      # Probability of slippage on market orders
+      prob_slippage: 0.4
+      
+      # Maximum slippage in basis points (100 bps = 1%)
+      max_slippage_bps: 50
+      
+      # Price impact factor for large orders
+      price_impact_factor: 0.1
+      
+      # Random seed for reproducibility (optional)
+      # random_seed: 42
+    
+    # Latency model configuration
+    latency_model:
+      # Mean latency in milliseconds
+      mean_ms: 50
+      
+      # Standard deviation of latency
+      std_ms: 20
+      
+      # Minimum latency
+      min_ms: 10
+      
+      # Maximum latency
+      max_ms: 500
+    
+    # Fee model configuration
+    fee_model:
+      # Use platform-specific fees
+      use_platform_fees: true
+      
+      # Custom fee overrides (optional)
+      # custom_fees:
+      #   polymarket:
+      #     taker_fee: 0.02
+      #   kalshi:
+      #     taker_fee: 0.07
+  
+  # ---------------------------------------------------------------------------
+  # Risk Limits
+  # ---------------------------------------------------------------------------
+  risk_limits:
+    # Maximum position size per market
+    max_position_size: 500
+    
+    # Maximum daily loss before stopping
+    max_daily_loss: 200
+    
+    # Maximum number of open positions
+    max_open_positions: 10
+    
+    # Maximum position as percentage of portfolio
+    max_position_pct: 0.1
+    
+    # Stop loss percentage (optional)
+    # stop_loss_pct: 0.1
+  
+  # ---------------------------------------------------------------------------
+  # Output Settings
+  # ---------------------------------------------------------------------------
+  output_dir: "./simulation_results"
+  save_trades: true
+  save_equity_curve: true
+  generate_report: true

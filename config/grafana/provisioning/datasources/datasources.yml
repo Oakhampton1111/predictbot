@@ -1,0 +1,54 @@
+# =============================================================================
+# Grafana Data Sources Provisioning
+# =============================================================================
+# This file configures data sources that are automatically provisioned
+# when Grafana starts. These data sources connect to Prometheus for metrics
+# and Loki for logs.
+# =============================================================================
+
+apiVersion: 1
+
+# List of data sources to delete from the database
+deleteDatasources: []
+
+# List of data sources to insert/update
+datasources:
+  # ---------------------------------------------------------------------------
+  # Prometheus - Metrics Data Source
+  # ---------------------------------------------------------------------------
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: "2.47.0"
+      cacheLevel: 'High'
+      disableRecordingRules: false
+      incrementalQueryOverlapWindow: 10m
+    version: 1
+    uid: prometheus
+
+  # ---------------------------------------------------------------------------
+  # Loki - Logs Data Source
+  # ---------------------------------------------------------------------------
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: false
+    editable: false
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        # Link correlation IDs to traces (if tracing is added later)
+        - name: correlation_id
+          matcherRegex: '"correlation_id":"([^"]+)"'
+          url: ''
+          datasourceUid: ''
+    version: 1
+    uid: loki

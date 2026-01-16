@@ -1,0 +1,237 @@
+// =============================================================================
+// PredictBot Stack - Prisma Schema
+// =============================================================================
+// This schema defines all database models for the prediction market trading bot.
+// It mirrors the SQL schema in init.sql and provides type-safe database access.
+//
+// Usage:
+//   npx prisma generate    # Generate Prisma Client
+//   npx prisma db push     # Push schema to database
+//   npx prisma migrate dev # Create and apply migrations
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [timescaledb, uuid_ossp(map: "uuid-ossp")]
+}
+
+// =============================================================================
+// Positions Model
+// =============================================================================
+// Tracks all trading positions across platforms
+model Position {
+  id             String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  platform       String    @db.VarChar(20)
+  marketId       String    @map("market_id") @db.VarChar(100)
+  marketQuestion String?   @map("market_question") @db.Text
+  side           String    @db.VarChar(10)
+  size           Decimal   @db.Decimal(18, 8)
+  entryPrice     Decimal   @map("entry_price") @db.Decimal(18, 8)
+  currentPrice   Decimal?  @map("current_price") @db.Decimal(18, 8)
+  unrealizedPnl  Decimal?  @map("unrealized_pnl") @db.Decimal(18, 8)
+  realizedPnl    Decimal?  @default(0) @map("realized_pnl") @db.Decimal(18, 8)
+  strategy       String    @db.VarChar(20)
+  openedAt       DateTime  @default(now()) @map("opened_at") @db.Timestamptz
+  closedAt       DateTime? @map("closed_at") @db.Timestamptz
+  status         String    @default("open") @db.VarChar(20)
+  metadata       Json      @default("{}")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  trades Trade[]
+
+  @@index([platform])
+  @@index([marketId])
+  @@index([strategy])
+  @@index([status])
+  @@index([openedAt])
+  @@index([platform, status])
+  @@map("positions")
+}
+
+// =============================================================================
+// Trades Model
+// =============================================================================
+// Records individual trade executions
+model Trade {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  positionId String?  @map("position_id") @db.Uuid
+  platform   String   @db.VarChar(20)
+  marketId   String   @map("market_id") @db.VarChar(100)
+  side       String   @db.VarChar(10)
+  size       Decimal  @db.Decimal(18, 8)
+  price      Decimal  @db.Decimal(18, 8)
+  fees       Decimal? @default(0) @db.Decimal(18, 8)
+  strategy   String   @db.VarChar(20)
+  executedAt DateTime @default(now()) @map("executed_at") @db.Timestamptz
+  orderId    String?  @map("order_id") @db.VarChar(100)
+  txHash     String?  @map("tx_hash") @db.VarChar(100)
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  position Position? @relation(fields: [positionId], references: [id], onDelete: SetNull)
+
+  @@index([positionId])
+  @@index([platform])
+  @@index([marketId])
+  @@index([strategy])
+  @@index([executedAt])
+  @@index([platform, executedAt])
+  @@map("trades")
+}
+
+// =============================================================================
+// PnL Snapshots Model
+// =============================================================================
+// Time-series data for P&L tracking (TimescaleDB hypertable)
+// Note: This is a hypertable in PostgreSQL, managed by TimescaleDB
+model PnlSnapshot {
+  id            Int      @default(autoincrement())
+  timestamp     DateTime @default(now()) @db.Timestamptz
+  totalPnl      Decimal  @map("total_pnl") @db.Decimal(18, 8)
+  realizedPnl   Decimal  @map("realized_pnl") @db.Decimal(18, 8)
+  unrealizedPnl Decimal  @map("unrealized_pnl") @db.Decimal(18, 8)
+  dailyPnl      Decimal? @default(0) @map("daily_pnl") @db.Decimal(18, 8)
+  byStrategy    Json     @default("{}") @map("by_strategy")
+  byPlatform    Json     @default("{}") @map("by_platform")
+  positionCount Int?     @default(0) @map("position_count")
+  tradeCount    Int?     @default(0) @map("trade_count")
+
+  @@id([id, timestamp])
+  @@map("pnl_snapshots")
+}
+
+// =============================================================================
+// AI Forecasts Model
+// =============================================================================
+// Stores AI-generated probability forecasts for tracking accuracy
+model AiForecast {
+  id                   String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  marketId             String    @map("market_id") @db.VarChar(100)
+  platform             String    @db.VarChar(20)
+  marketQuestion       String?   @map("market_question") @db.Text
+  predictedProbability Decimal   @map("predicted_probability") @db.Decimal(5, 4)
+  confidence           Decimal   @db.Decimal(5, 4)
+  reasoning            String?   @db.Text
+  sources              Json      @default("[]")
+  modelUsed            String?   @map("model_used") @db.VarChar(50)
+  agentName            String?   @map("agent_name") @db.VarChar(50)
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  resolutionDate       DateTime? @map("resolution_date") @db.Timestamptz
+  outcome              Boolean?
+  accuracyScore        Decimal?  @map("accuracy_score") @db.Decimal(5, 4)
+  metadata             Json      @default("{}")
+
+  @@index([marketId])
+  @@index([platform])
+  @@index([createdAt])
+  @@index([modelUsed])
+  @@map("ai_forecasts")
+}
+
+// =============================================================================
+// Alerts Model
+// =============================================================================
+// System alerts and notifications
+model Alert {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  type            String    @db.VarChar(50)
+  severity        String    @db.VarChar(20)
+  message         String    @db.Text
+  details         Json      @default("{}")
+  source          String?   @db.VarChar(50)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  acknowledgedAt  DateTime? @map("acknowledged_at") @db.Timestamptz
+  acknowledgedBy  String?   @map("acknowledged_by") @db.VarChar(100)
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz
+  resolvedBy      String?   @map("resolved_by") @db.VarChar(100)
+  resolutionNotes String?   @map("resolution_notes") @db.Text
+
+  @@index([type])
+  @@index([severity])
+  @@index([createdAt])
+  @@map("alerts")
+}
+
+// =============================================================================
+// Config History Model
+// =============================================================================
+// Audit log for configuration changes
+model ConfigHistory {
+  id             Int      @id @default(autoincrement())
+  config         Json
+  previousConfig Json?    @map("previous_config")
+  changedBy      String?  @map("changed_by") @db.VarChar(100)
+  changedAt      DateTime @default(now()) @map("changed_at") @db.Timestamptz
+  changeSummary  String?  @map("change_summary") @db.Text
+  changeType     String?  @map("change_type") @db.VarChar(20)
+  ipAddress      String?  @map("ip_address") @db.VarChar(45)
+  userAgent      String?  @map("user_agent") @db.Text
+
+  @@index([changedAt])
+  @@index([changedBy])
+  @@map("config_history")
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum Platform {
+  polymarket
+  kalshi
+  manifold
+  predictit
+}
+
+enum PositionSide {
+  yes
+  no
+  buy
+  sell
+}
+
+enum PositionStatus {
+  open
+  closed
+  liquidated
+  expired
+}
+
+enum TradeSide {
+  buy_yes
+  buy_no
+  sell_yes
+  sell_no
+  buy
+  sell
+}
+
+enum Strategy {
+  arbitrage
+  market_making
+  spike
+  ai
+}
+
+enum AlertSeverity {
+  critical
+  high
+  medium
+  low
+  info
+}
+
+enum ConfigChangeType {
+  create
+  update
+  rollback
+}

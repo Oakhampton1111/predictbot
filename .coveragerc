@@ -1,0 +1,100 @@
+# Coverage.py configuration for PredictBot Stack
+
+[run]
+# Source directories to measure
+source = 
+    shared
+    modules
+    orchestrator
+
+# Files/directories to omit from coverage
+omit = 
+    */tests/*
+    */__pycache__/*
+    */migrations/*
+    */.venv/*
+    */venv/*
+    */node_modules/*
+    */site-packages/*
+    setup.py
+    conftest.py
+
+# Enable branch coverage
+branch = True
+
+# Parallel mode for distributed testing
+parallel = True
+
+# Context for coverage data
+context = ${COVERAGE_CONTEXT}
+
+[paths]
+# Map paths for combining coverage from different environments
+source =
+    .
+    /app
+    /home/runner/work/predictbot-stack/predictbot-stack
+
+[report]
+# Minimum coverage percentage required
+fail_under = 60
+
+# Show missing lines in report
+show_missing = True
+
+# Exclude lines from coverage
+exclude_lines =
+    # Standard exclusions
+    pragma: no cover
+    
+    # Debug-only code
+    def __repr__
+    def __str__
+    
+    # Defensive assertions
+    raise AssertionError
+    raise NotImplementedError
+    
+    # Abstract methods
+    @abstractmethod
+    
+    # Type checking blocks
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+    
+    # Main blocks
+    if __name__ == .__main__.:
+    
+    # Unreachable code
+    pass
+    \.\.\.
+
+# Ignore files with no executable code
+ignore_errors = True
+
+# Precision for coverage percentages
+precision = 2
+
+# Sort report by coverage percentage
+sort = Cover
+
+[html]
+# HTML report output directory
+directory = coverage_report
+
+# Title for HTML report
+title = PredictBot Stack Coverage Report
+
+# Show contexts in HTML report
+show_contexts = True
+
+[xml]
+# XML report output file
+output = coverage.xml
+
+[json]
+# JSON report output file
+output = coverage.json
+
+# Pretty print JSON
+pretty_print = True

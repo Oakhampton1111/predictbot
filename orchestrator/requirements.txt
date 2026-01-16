@@ -1,0 +1,29 @@
+# PredictBot Orchestrator Dependencies
+
+# Configuration
+pyyaml>=6.0.1
+
+# Web server for health checks
+flask>=3.0.0
+gunicorn>=21.0.0
+
+# HTTP client
+requests>=2.31.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Async support
+aiohttp>=3.9.0
+
+# Logging
+python-json-logger>=2.0.0
+
+# Docker SDK (for container management)
+docker>=7.0.0
+
+# Utilities
+python-dateutil>=2.8.0
+
+# Metrics and Monitoring
+prometheus-client>=0.19.0

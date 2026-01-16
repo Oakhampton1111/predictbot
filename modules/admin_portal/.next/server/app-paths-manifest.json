@@ -1,0 +1,10 @@
+{
+  "/logs/page": "app/logs/page.js",
+  "/page": "app/page.js",
+  "/simulation/page": "app/simulation/page.js",
+  "/strategies/page": "app/strategies/page.js",
+  "/analytics/page": "app/analytics/page.js",
+  "/api/analytics/route": "app/api/analytics/route.js",
+  "/health/page": "app/health/page.js",
+  "/api/health/detailed/route": "app/api/health/detailed/route.js"
+}

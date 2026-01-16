@@ -1,0 +1,808 @@
+# =============================================================================
+# PredictBot Stack - Docker Compose Configuration
+# =============================================================================
+# This file defines all services for the prediction market trading bot stack.
+#
+# Each service corresponds to a cloned open-source module that has been
+# integrated into this unified trading system.
+#
+# Usage:
+#   docker-compose build                    # Build all images
+#   docker-compose --profile full up -d     # Start all services
+#   docker-compose logs -f                  # View logs
+#   docker-compose down                     # Stop all services
+#
+# Profiles:
+#   full          - All services
+#   arbitrage     - Arbitrage bot only
+#   market-making - Market making bots
+#   ai-trading    - AI trading + MCP + Polyseer
+#   spike-trading - Spike trading bot
+# =============================================================================
+
+version: '3.8'
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  predictbot-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  predictbot-logs:
+    driver: local
+  predictbot-data:
+    driver: local
+  kalshi-ai-data:
+    driver: local
+  polyseer-data:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  loki_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+# =============================================================================
+# Services
+# =============================================================================
+services:
+  
+  # ---------------------------------------------------------------------------
+  # Polymarket-Kalshi Arbitrage Bot (Rust)
+  # ---------------------------------------------------------------------------
+  polymarket-arb:
+    build:
+      context: ./modules/polymarket_arb
+      dockerfile: Dockerfile
+    container_name: predictbot-arb
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    environment:
+      # Polymarket Configuration
+      - POLY_PRIVATE_KEY=${POLY_PRIVATE_KEY}
+      - POLY_RPC_URL=${POLY_RPC_URL}
+      # Kalshi Configuration
+      - KALSHI_API_KEY=${KALSHI_API_KEY}
+      - KALSHI_API_SECRET=${KALSHI_API_SECRET}
+      # Strategy Configuration
+      - DRY_RUN=${DRY_RUN:-1}
+      - ARB_MIN_PROFIT=${ARB_MIN_PROFIT:-0.02}
+      - ARB_MAX_TRADE_SIZE=${ARB_MAX_TRADE_SIZE:-300}
+      # Logging
+      - RUST_LOG=${LOG_LEVEL:-info}
+    volumes:
+      - predictbot-logs:/app/logs
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "arbitrage"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '${CONTAINER_CPU_LIMIT:-1.0}'
+          memory: ${CONTAINER_MEMORY_LIMIT:-512m}
+        reservations:
+          cpus: '0.25'
+          memory: 128m
+    profiles:
+      - arbitrage
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Polymarket Market Maker Bot (Python)
+  # ---------------------------------------------------------------------------
+  polymarket-mm:
+    build:
+      context: ./modules/polymarket_mm
+      dockerfile: Dockerfile
+    container_name: predictbot-poly-mm
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    environment:
+      # Polymarket Configuration
+      - POLY_PRIVATE_KEY=${POLY_PRIVATE_KEY}
+      - POLY_RPC_URL=${POLY_RPC_URL}
+      # Strategy Configuration
+      - DRY_RUN=${DRY_RUN:-1}
+      - MM_POLY_SPREAD_BPS=${MM_POLY_SPREAD_BPS:-500}
+      - MM_POLY_ORDER_SIZE=${MM_POLY_ORDER_SIZE:-50}
+      - MM_POLY_INVENTORY_LIMIT=${MM_POLY_INVENTORY_LIMIT:-500}
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - predictbot-logs:/app/logs
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '${CONTAINER_CPU_LIMIT:-1.0}'
+          memory: ${CONTAINER_MEMORY_LIMIT:-512m}
+        reservations:
+          cpus: '0.25'
+          memory: 128m
+    depends_on:
+      - mcp-server
+    profiles:
+      - market-making
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Polymarket Spike Trading Bot (Python)
+  # ---------------------------------------------------------------------------
+  polymarket-spike:
+    build:
+      context: ./modules/polymarket_spike
+      dockerfile: Dockerfile
+    container_name: predictbot-spike
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    environment:
+      # Polymarket Configuration
+      - POLY_PRIVATE_KEY=${POLY_PRIVATE_KEY}
+      - POLY_RPC_URL=${POLY_RPC_URL}
+      # Strategy Configuration
+      - DRY_RUN=${DRY_RUN:-1}
+      - SPIKE_SENSITIVITY=${SPIKE_SENSITIVITY:-0.05}
+      - SPIKE_STRATEGY=${SPIKE_STRATEGY:-mean_reversion}
+      - SPIKE_MAX_SIZE=${SPIKE_MAX_SIZE:-100}
+      - SPIKE_COOLDOWN=${SPIKE_COOLDOWN:-60}
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - predictbot-logs:/app/logs
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '${CONTAINER_CPU_LIMIT:-1.0}'
+          memory: ${CONTAINER_MEMORY_LIMIT:-512m}
+        reservations:
+          cpus: '0.25'
+          memory: 128m
+    profiles:
+      - spike-trading
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Kalshi AI Trading Bot (Python)
+  # ---------------------------------------------------------------------------
+  kalshi-ai:
+    build:
+      context: ./modules/kalshi_ai
+      dockerfile: Dockerfile
+    container_name: predictbot-kalshi-ai
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    ports:
+      - "8000:8000"  # Dashboard port
+    environment:
+      # Kalshi Configuration
+      - KALSHI_API_KEY=${KALSHI_API_KEY}
+      - KALSHI_API_SECRET=${KALSHI_API_SECRET}
+      # AI Configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - AI_MODEL=${AI_MODEL:-openai:gpt-4}
+      # Strategy Configuration
+      - DRY_RUN=${DRY_RUN:-1}
+      - AI_SCAN_INTERVAL=${AI_SCAN_INTERVAL:-300}
+      - AI_CONFIDENCE_THRESHOLD=${AI_CONFIDENCE_THRESHOLD:-0.6}
+      - AI_MAX_BET=${AI_MAX_BET:-100}
+      # Database
+      - DATABASE_PATH=/app/data/kalshi_ai.db
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - predictbot-logs:/app/logs
+      - kalshi-ai-data:/app/data
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '${CONTAINER_CPU_LIMIT:-1.0}'
+          memory: 1g  # AI needs more memory
+        reservations:
+          cpus: '0.5'
+          memory: 256m
+    depends_on:
+      - mcp-server
+    profiles:
+      - ai-trading
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Manifold Market Maker Bot (Node.js)
+  # ---------------------------------------------------------------------------
+  manifold-mm:
+    build:
+      context: ./modules/manifold_mm
+      dockerfile: Dockerfile
+    container_name: predictbot-manifold-mm
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    environment:
+      # Manifold Configuration
+      - MANIFOLD_API_KEY=${MANIFOLD_API_KEY}
+      - MANIFOLD_USERNAME=${MANIFOLD_USERNAME}
+      # Strategy Configuration
+      - MM_MANIFOLD_ORDER_SIZE=${MM_MANIFOLD_ORDER_SIZE:-100}
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - predictbot-logs:/app/logs
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '${CONTAINER_CPU_LIMIT:-1.0}'
+          memory: ${CONTAINER_MEMORY_LIMIT:-512m}
+        reservations:
+          cpus: '0.25'
+          memory: 128m
+    profiles:
+      - market-making
+      - full
+
+  # ---------------------------------------------------------------------------
+  # MCP Server (Rust) - Model Context Protocol for AI
+  # ---------------------------------------------------------------------------
+  mcp-server:
+    build:
+      context: ./modules/mcp_server
+      dockerfile: Dockerfile
+    container_name: predictbot-mcp
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    ports:
+      - "${MCP_SERVER_PORT:-3000}:3000"
+    environment:
+      # Polymarket Configuration (for data access)
+      - POLY_RPC_URL=${POLY_RPC_URL}
+      # Server Configuration
+      - MCP_SERVER_HOST=${MCP_SERVER_HOST:-0.0.0.0}
+      - MCP_SERVER_PORT=3000
+      # Logging
+      - RUST_LOG=${LOG_LEVEL:-info}
+    volumes:
+      - predictbot-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256m
+        reservations:
+          cpus: '0.1'
+          memory: 64m
+    profiles:
+      - ai-trading
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Polyseer Research Assistant (Node.js)
+  # ---------------------------------------------------------------------------
+  polyseer:
+    build:
+      context: ./modules/polyseer
+      dockerfile: Dockerfile
+    container_name: predictbot-polyseer
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    ports:
+      - "${POLYSEER_PORT:-3001}:3001"
+    environment:
+      # Valyu API Configuration
+      - VALYU_API_KEY=${VALYU_API_KEY}
+      # Server Configuration
+      - PORT=3001
+      # Database
+      - DATABASE_PATH=/app/data/polyseer.db
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - predictbot-logs:/app/logs
+      - polyseer-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+        reservations:
+          cpus: '0.1'
+          memory: 128m
+    profiles:
+      - ai-trading
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Orchestrator / Risk Manager (Python)
+  # ---------------------------------------------------------------------------
+  orchestrator:
+    build:
+      context: ./orchestrator
+      dockerfile: Dockerfile
+    container_name: predictbot-orchestrator
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    ports:
+      - "8080:8080"  # Health check / API port
+    environment:
+      # Risk Management
+      - MAX_DAILY_LOSS=${MAX_DAILY_LOSS:-100.0}
+      - MAX_TOTAL_POSITION=${MAX_TOTAL_POSITION:-1000.0}
+      - CIRCUIT_BREAKER_THRESHOLD=${CIRCUIT_BREAKER_THRESHOLD:-5}
+      - CIRCUIT_BREAKER_COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN:-300}
+      # Feature Flags
+      - ENABLE_ARB=${ENABLE_ARB:-1}
+      - ENABLE_MM_POLYMARKET=${ENABLE_MM_POLYMARKET:-1}
+      - ENABLE_MM_MANIFOLD=${ENABLE_MM_MANIFOLD:-1}
+      - ENABLE_SPIKE=${ENABLE_SPIKE:-1}
+      - ENABLE_AI=${ENABLE_AI:-1}
+      # Database
+      - DATABASE_PATH=/app/data/predictbot.db
+      - DATABASE_URL=${DATABASE_URL}
+      # Redis / Event Bus
+      - REDIS_URL=redis://redis:6379
+      # Alert Notifications
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+      - ALERT_EMAIL_ENABLED=${ALERT_EMAIL_ENABLED:-false}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - ALERT_EMAIL_TO=${ALERT_EMAIL_TO}
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PREDICTBOT_SERVICE_NAME=orchestrator
+    volumes:
+      - predictbot-logs:/app/logs
+      - predictbot-data:/app/data
+      - ./config:/app/config:ro
+      - ./shared:/app/shared:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # For container management
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256m
+        reservations:
+          cpus: '0.1'
+          memory: 64m
+    profiles:
+      - full
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database with TimescaleDB
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: predictbot_postgres
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    environment:
+      - POSTGRES_USER=predictbot
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=predictbot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U predictbot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.25'
+          memory: 256m
+    profiles:
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache for Real-time State
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: predictbot_redis
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256m
+        reservations:
+          cpus: '0.1'
+          memory: 64m
+    profiles:
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Loki - Log Aggregation
+  # ---------------------------------------------------------------------------
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: predictbot_loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki_data:/loki
+    networks:
+      - predictbot-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+        reservations:
+          cpus: '0.1'
+          memory: 128m
+    restart: unless-stopped
+    profiles:
+      - monitoring
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Promtail - Log Collector
+  # ---------------------------------------------------------------------------
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: predictbot_promtail
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/promtail-config.yml:/etc/promtail/config.yml:ro
+      - predictbot-logs:/var/log/predictbot:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - predictbot-network
+    depends_on:
+      - loki
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128m
+        reservations:
+          cpus: '0.05'
+          memory: 64m
+    restart: unless-stopped
+    profiles:
+      - monitoring
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Prometheus - Metrics Collection
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: predictbot_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}'
+      - '--web.enable-lifecycle'
+    networks:
+      - predictbot-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+        reservations:
+          cpus: '0.1'
+          memory: 128m
+    restart: unless-stopped
+    profiles:
+      - monitoring
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Grafana - Visualization & Dashboards
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: predictbot_grafana
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3002
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - predictbot-network
+    depends_on:
+      - prometheus
+      - loki
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+        reservations:
+          cpus: '0.1'
+          memory: 128m
+    restart: unless-stopped
+    profiles:
+      - monitoring
+      - full
+
+  # ---------------------------------------------------------------------------
+  # Ollama - Local LLM Server with GPU Support
+  # ---------------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: predictbot_ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - predictbot-network
+    profiles:
+      - full
+      - ai
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # AI Orchestrator - LangGraph-based Multi-Agent System
+  # ---------------------------------------------------------------------------
+  ai_orchestrator:
+    build: ./modules/ai_orchestrator
+    container_name: predictbot_ai_orchestrator
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=${DATABASE_URL}
+      - MCP_SERVER_URL=http://mcp-server:3000
+      - POLYSEER_URL=http://polyseer:3001
+      - ORCHESTRATOR_URL=http://orchestrator:8080
+      - PREDICTBOT_SERVICE_NAME=ai_orchestrator
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - AI_SCAN_INTERVAL=${AI_SCAN_INTERVAL:-300}
+      - AI_CONFIDENCE_THRESHOLD=${AI_CONFIDENCE_THRESHOLD:-0.6}
+      - MIN_CONFIDENCE_THRESHOLD=${AI_CONFIDENCE_THRESHOLD:-0.6}
+      - AI_MAX_BET=${AI_MAX_BET:-100}
+      - OPENAI_MONTHLY_BUDGET=${OPENAI_MONTHLY_BUDGET:-50}
+      - ANTHROPIC_MONTHLY_BUDGET=${ANTHROPIC_MONTHLY_BUDGET:-30}
+      - GROQ_MONTHLY_BUDGET=${GROQ_MONTHLY_BUDGET:-10}
+      # Alert Notifications
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./shared:/app/shared:ro
+      - predictbot-logs:/app/logs
+    depends_on:
+      - ollama
+      - redis
+      - postgres
+      - mcp-server
+    networks:
+      - predictbot-network
+    profiles:
+      - full
+      - ai
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Admin Portal - Next.js Dashboard
+  # ---------------------------------------------------------------------------
+  admin_portal:
+    build:
+      context: ./modules/admin_portal
+      dockerfile: Dockerfile
+    container_name: predictbot_admin
+    restart: unless-stopped
+    networks:
+      - predictbot-network
+    ports:
+      - "3003:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=http://localhost:3003
+      - ORCHESTRATOR_URL=http://orchestrator:8080
+      - AI_ORCHESTRATOR_URL=http://ai_orchestrator:8081
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      - postgres
+      - redis
+      - orchestrator
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512m
+        reservations:
+          cpus: '0.25'
+          memory: 128m
+    profiles:
+      - full
+      - admin
+
+# =============================================================================
+# Usage Examples
+# =============================================================================
+#
+# Start all services:
+#   docker-compose --profile full up -d
+#
+# Start only arbitrage:
+#   docker-compose --profile arbitrage up -d
+#
+# Start only market making:
+#   docker-compose --profile market-making up -d
+#
+# Start only AI trading:
+#   docker-compose --profile ai-trading up -d
+#
+# Start only spike trading:
+#   docker-compose --profile spike-trading up -d
+#
+# Start only monitoring (Prometheus, Grafana, Loki):
+#   docker-compose --profile monitoring up -d
+#
+# Start only admin portal:
+#   docker-compose --profile admin up -d
+#
+# View logs for specific service:
+#   docker-compose logs -f kalshi-ai
+#
+# Stop all services:
+#   docker-compose down
+#
+# Rebuild and restart:
+#   docker-compose --profile full up -d --build
+#
+# Access monitoring dashboards:
+#   Grafana:    http://localhost:3002 (admin/admin by default)
+#   Prometheus: http://localhost:9090
+#   Loki:       http://localhost:3100
+#
+# =============================================================================

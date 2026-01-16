@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Large Trade Executed</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+    <div style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px;">💰 Large Trade Executed</h1>
+        <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.95;">Significant Position Update</p>
+    </div>
+    
+    <div style="background: #d1ecf1; padding: 20px; border-left: 4px solid #17a2b8; border-right: 1px solid #dee2e6;">
+        <p style="margin: 0; font-weight: bold; color: #0c5460;">
+            📊 A large trade has been executed that exceeds notification thresholds.
+        </p>
+    </div>
+    
+    <div style="background: white; padding: 25px; border: 1px solid #dee2e6; border-top: none;">
+        <h2 style="color: #17a2b8; margin-top: 0; border-bottom: 2px solid #17a2b8; padding-bottom: 10px;">
+            Trade Details
+        </h2>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; width: 40%;">Trade ID:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-family: monospace; background: #f8f9fa;">
+                    ${meta_trade_id}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Market:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                    ${meta_market_id}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Platform:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                    ${meta_platform}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Side:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; color: #17a2b8;">
+                    ${meta_side}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Quantity:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 18px; font-weight: bold;">
+                    ${meta_quantity}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Price:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 18px;">
+                    $${meta_price}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Total Value:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 20px; font-weight: bold; color: #28a745;">
+                    $${meta_total_value}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Fees:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                    $${meta_fees}
+                </td>
+            </tr>
+        </table>
+        
+        <h3 style="color: #333; margin-top: 25px;">Strategy Information</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; width: 40%;">Strategy ID:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-family: monospace;">
+                    ${meta_strategy_id}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Execution Time:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                    ${meta_execution_time_ms} ms
+                </td>
+            </tr>
+        </table>
+        
+        <div style="background: #e7f3ff; padding: 15px; border-radius: 4px; margin-top: 20px; border-left: 4px solid #0066cc;">
+            <p style="margin: 0; color: #004085; font-size: 14px;">
+                <strong>ℹ️ Note:</strong> This notification is sent because the trade value exceeds 
+                the configured threshold for large trade alerts. No action is required unless 
+                this trade was unexpected.
+            </p>
+        </div>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 8px 8px;">
+        <table style="width: 100%; font-size: 13px; color: #666;">
+            <tr>
+                <td><strong>Alert ID:</strong> ${alert_id}</td>
+                <td style="text-align: right;"><strong>Time:</strong> ${timestamp}</td>
+            </tr>
+            <tr>
+                <td><strong>Source:</strong> ${source}</td>
+                <td style="text-align: right;"><strong>Severity:</strong> ${severity_upper}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+        <p>This is an automated notification from PredictBot Trading System.</p>
+        <p>Do not reply to this email.</p>
+    </div>
+</body>
+</html>

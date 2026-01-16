@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Low Confidence Warning</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+    <div style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); color: #333; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px;">🤖 AI Confidence Warning</h1>
+        <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.85;">Model Uncertainty Detected</p>
+    </div>
+    
+    <div style="background: #fff3cd; padding: 20px; border-left: 4px solid #ffc107; border-right: 1px solid #dee2e6;">
+        <p style="margin: 0; font-weight: bold; color: #856404;">
+            📊 The AI model has generated a forecast with confidence below the acceptable threshold.
+        </p>
+    </div>
+    
+    <div style="background: white; padding: 25px; border: 1px solid #dee2e6; border-top: none;">
+        <h2 style="color: #e0a800; margin-top: 0; border-bottom: 2px solid #ffc107; padding-bottom: 10px;">
+            Forecast Details
+        </h2>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; width: 40%;">Forecast ID:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-family: monospace; background: #f8f9fa;">
+                    ${meta_forecast_id}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold;">Market ID:</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                    ${meta_market_id}
+                </td>
+            </tr>
+        </table>
+        
+        <h3 style="color: #333; margin-top: 25px;">Confidence Analysis</h3>
+        <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div style="flex: 1; background: #f8d7da; padding: 20px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #dc3545;">${meta_confidence}</div>
+                <div style="color: #721c24; font-size: 14px;">Current Confidence</div>
+            </div>
+            <div style="flex: 1; background: #d4edda; padding: 20px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #28a745;">${meta_threshold}</div>
+                <div style="color: #155724; font-size: 14px;">Required Threshold</div>
+            </div>
+        </div>
+        
+        <!-- Confidence Bar -->
+        <div style="background: #e9ecef; border-radius: 10px; height: 20px; overflow: hidden; margin-bottom: 20px;">
+            <div style="background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%); height: 100%; width: 100%; position: relative;">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; background: rgba(0,0,0,0.3); width: calc(100% - ${meta_confidence});"></div>
+            </div>
+        </div>
+        
+        <h3 style="color: #333; margin-top: 25px;">Reason for Low Confidence</h3>
+        <div style="background: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107;">
+            <p style="margin: 0; color: #856404;">
+                ${meta_reason}
+            </p>
+        </div>
+        
+        <h3 style="color: #333; margin-top: 25px;">What This Means</h3>
+        <p style="color: #555;">
+            When the AI model's confidence falls below the threshold, it indicates one or more of the following:
+        </p>
+        <ul style="color: #555; padding-left: 20px;">
+            <li><strong>Insufficient Data:</strong> Not enough historical data for reliable prediction</li>
+            <li><strong>Market Uncertainty:</strong> Unusual market conditions or high volatility</li>
+            <li><strong>Conflicting Signals:</strong> Different indicators pointing in opposite directions</li>
+            <li><strong>Novel Situation:</strong> Market conditions outside the model's training data</li>
+        </ul>
+        
+        <h3 style="color: #333; margin-top: 25px;">Recommended Actions</h3>
+        <div style="background: #e7f3ff; padding: 15px; border-radius: 4px; border-left: 4px solid #0066cc;">
+            <ol style="margin: 0; padding-left: 20px; color: #004085;">
+                <li style="margin-bottom: 8px;">Review the market manually before taking any position</li>
+                <li style="margin-bottom: 8px;">Consider reducing position size if trading this market</li>
+                <li style="margin-bottom: 8px;">Wait for higher confidence signals before entering</li>
+                <li style="margin-bottom: 8px;">Check for any news or events affecting this market</li>
+            </ol>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px;">
+            <p style="margin: 0; font-size: 14px; color: #666;">
+                <strong>Note:</strong> Low confidence forecasts are automatically excluded from 
+                automated trading decisions. This alert is for informational purposes to help 
+                you understand the AI's current limitations on this market.
+            </p>
+        </div>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 20px; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 8px 8px;">
+        <table style="width: 100%; font-size: 13px; color: #666;">
+            <tr>
+                <td><strong>Alert ID:</strong> ${alert_id}</td>
+                <td style="text-align: right;"><strong>Time:</strong> ${timestamp}</td>
+            </tr>
+            <tr>
+                <td><strong>Source:</strong> ${source}</td>
+                <td style="text-align: right;"><strong>Severity:</strong> ${severity_upper}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+        <p>This is an automated alert from PredictBot AI System.</p>
+        <p>Do not reply to this email.</p>
+    </div>
+</body>
+</html>
