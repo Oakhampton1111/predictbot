@@ -1,5 +1,6 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
 const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL || 'http://localhost:8080'
+const AI_ORCHESTRATOR_URL = process.env.AI_ORCHESTRATOR_URL || 'http://localhost:8081'
 
 // Orchestrator API client
 export const orchestratorApi = {
@@ -83,6 +84,59 @@ export const orchestratorApi = {
     const res = await fetch(`${ORCHESTRATOR_URL}/health`)
     if (!res.ok) return { status: 'unhealthy' }
     return res.json()
+  },
+}
+
+// AI Orchestrator API client
+export const aiApi = {
+  async getStatus() {
+    try {
+      const res = await fetch(`${AI_ORCHESTRATOR_URL}/health`)
+      if (!res.ok) return { status: 'offline', agents: [] }
+      return res.json()
+    } catch {
+      return { status: 'offline', agents: [] }
+    }
+  },
+
+  async getAgents() {
+    try {
+      const res = await fetch(`${AI_ORCHESTRATOR_URL}/api/agents`)
+      if (!res.ok) return []
+      return res.json()
+    } catch {
+      return []
+    }
+  },
+
+  async analyzeMarket(marketId: string) {
+    const res = await fetch(`${AI_ORCHESTRATOR_URL}/api/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ marketId }),
+    })
+    if (!res.ok) throw new Error('Failed to analyze market')
+    return res.json()
+  },
+
+  async getRecentAnalyses() {
+    try {
+      const res = await fetch(`${AI_ORCHESTRATOR_URL}/api/analyses`)
+      if (!res.ok) return []
+      return res.json()
+    } catch {
+      return []
+    }
+  },
+
+  async getCostSummary() {
+    try {
+      const res = await fetch(`${AI_ORCHESTRATOR_URL}/api/costs`)
+      if (!res.ok) return { daily: 0, monthly: 0, total: 0 }
+      return res.json()
+    } catch {
+      return { daily: 0, monthly: 0, total: 0 }
+    }
   },
 }
 
