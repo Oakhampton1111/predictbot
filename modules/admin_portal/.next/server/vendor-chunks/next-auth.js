@@ -431,6 +431,16 @@ eval("\nObject.defineProperty(exports, \"__esModule\", ({\n    value: true\n}));
 
 /***/ }),
 
+/***/ "(rsc)/./node_modules/next-auth/providers/credentials.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/next-auth/providers/credentials.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+eval("\nObject.defineProperty(exports, \"__esModule\", ({\n    value: true\n}));\nexports[\"default\"] = Credentials;\nfunction Credentials(options) {\n    return {\n        id: \"credentials\",\n        name: \"Credentials\",\n        type: \"credentials\",\n        credentials: {},\n        authorize: ()=>null,\n        options\n    };\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL3Byb3ZpZGVycy9jcmVkZW50aWFscy5qcyIsIm1hcHBpbmdzIjoiQUFBYTtBQUViQSw4Q0FBNkM7SUFDM0NHLE9BQU87QUFDVCxDQUFDLEVBQUM7QUFDRkQsa0JBQWUsR0FBR0c7QUFDbEIsU0FBU0EsWUFBWUMsT0FBTztJQUMxQixPQUFPO1FBQ0xDLElBQUk7UUFDSkMsTUFBTTtRQUNOQyxNQUFNO1FBQ05DLGFBQWEsQ0FBQztRQUNkQyxXQUFXLElBQU07UUFDakJMO0lBQ0Y7QUFDRiIsInNvdXJjZXMiOlsid2VicGFjazovL3ByZWRpY3Rib3QtYWRtaW4vLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL3Byb3ZpZGVycy9jcmVkZW50aWFscy5qcz83NjM5Il0sInNvdXJjZXNDb250ZW50IjpbIlwidXNlIHN0cmljdFwiO1xuXG5PYmplY3QuZGVmaW5lUHJvcGVydHkoZXhwb3J0cywgXCJfX2VzTW9kdWxlXCIsIHtcbiAgdmFsdWU6IHRydWVcbn0pO1xuZXhwb3J0cy5kZWZhdWx0ID0gQ3JlZGVudGlhbHM7XG5mdW5jdGlvbiBDcmVkZW50aWFscyhvcHRpb25zKSB7XG4gIHJldHVybiB7XG4gICAgaWQ6IFwiY3JlZGVudGlhbHNcIixcbiAgICBuYW1lOiBcIkNyZWRlbnRpYWxzXCIsXG4gICAgdHlwZTogXCJjcmVkZW50aWFsc1wiLFxuICAgIGNyZWRlbnRpYWxzOiB7fSxcbiAgICBhdXRob3JpemU6ICgpID0+IG51bGwsXG4gICAgb3B0aW9uc1xuICB9O1xufSJdLCJuYW1lcyI6WyJPYmplY3QiLCJkZWZpbmVQcm9wZXJ0eSIsImV4cG9ydHMiLCJ2YWx1ZSIsImRlZmF1bHQiLCJDcmVkZW50aWFscyIsIm9wdGlvbnMiLCJpZCIsIm5hbWUiLCJ0eXBlIiwiY3JlZGVudGlhbHMiLCJhdXRob3JpemUiXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next-auth/providers/credentials.js\n");
+
+/***/ }),
+
 /***/ "(rsc)/./node_modules/next-auth/utils/detect-origin.js":
 /*!*******************************************************!*\
   !*** ./node_modules/next-auth/utils/detect-origin.js ***!

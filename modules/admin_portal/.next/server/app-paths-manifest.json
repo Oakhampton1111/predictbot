@@ -1,10 +1,12 @@
 {
-  "/logs/page": "app/logs/page.js",
-  "/page": "app/page.js",
+  "/not-found": "app/not-found.js",
   "/simulation/page": "app/simulation/page.js",
   "/strategies/page": "app/strategies/page.js",
   "/analytics/page": "app/analytics/page.js",
-  "/api/analytics/route": "app/api/analytics/route.js",
   "/health/page": "app/health/page.js",
-  "/api/health/detailed/route": "app/api/health/detailed/route.js"
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/health/detailed/route": "app/api/health/detailed/route.js",
+  "/positions/page": "app/positions/page.js",
+  "/logs/page": "app/logs/page.js",
+  "/api/logs/route": "app/api/logs/route.js"
 }
