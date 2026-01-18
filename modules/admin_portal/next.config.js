@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  experimental: {
-    serverActions: true,
-  },
   // Enable WebSocket support for real-time updates
   async headers() {
     return [
