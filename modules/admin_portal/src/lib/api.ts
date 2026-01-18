@@ -80,6 +80,14 @@ export const orchestratorApi = {
     return res.json()
   },
 
+  async emergencyCloseAll() {
+    const res = await fetch(`${ORCHESTRATOR_URL}/api/emergency/close-all`, {
+      method: 'POST',
+    })
+    if (!res.ok) throw new Error('Failed to close all positions')
+    return res.json()
+  },
+
   async getHealth() {
     const res = await fetch(`${ORCHESTRATOR_URL}/health`)
     if (!res.ok) return { status: 'unhealthy' }
