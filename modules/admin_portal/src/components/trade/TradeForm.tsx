@@ -15,8 +15,11 @@ interface Market {
   title: string;
   platform: Platform;
   currentPrice: number;
+  priceChange24h?: number;
   volume24h: number;
   liquidity: number;
+  endDate?: string;
+  category?: string;
 }
 
 interface TradePreview {

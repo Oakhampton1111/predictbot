@@ -26,8 +26,14 @@ export const orchestratorApi = {
     return res.json()
   },
 
-  async getPositions() {
-    const res = await fetch(`${ORCHESTRATOR_URL}/api/positions`)
+  async getPositions(filters?: { platform?: string; status?: string }) {
+    const params = new URLSearchParams()
+    if (filters?.platform) params.append('platform', filters.platform)
+    if (filters?.status) params.append('status', filters.status)
+    const url = params.toString()
+      ? `${ORCHESTRATOR_URL}/api/positions?${params}`
+      : `${ORCHESTRATOR_URL}/api/positions`
+    const res = await fetch(url)
     if (!res.ok) return []
     return res.json()
   },
@@ -91,6 +97,44 @@ export const orchestratorApi = {
   async getHealth() {
     const res = await fetch(`${ORCHESTRATOR_URL}/health`)
     if (!res.ok) return { status: 'unhealthy' }
+    return res.json()
+  },
+
+  async updateStrategyStatus(strategyId: string, action: string) {
+    const res = await fetch(`${ORCHESTRATOR_URL}/api/strategies/${strategyId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    })
+    if (!res.ok) throw new Error('Failed to update strategy status')
+    return res.json()
+  },
+
+  async getTrades(params?: { limit?: number; offset?: number }) {
+    const searchParams = new URLSearchParams()
+    if (params?.limit) searchParams.append('limit', params.limit.toString())
+    if (params?.offset) searchParams.append('offset', params.offset.toString())
+    const url = searchParams.toString()
+      ? `${ORCHESTRATOR_URL}/api/trades?${searchParams}`
+      : `${ORCHESTRATOR_URL}/api/trades`
+    const res = await fetch(url)
+    if (!res.ok) return []
+    return res.json()
+  },
+
+  async pauseAllStrategies() {
+    const res = await fetch(`${ORCHESTRATOR_URL}/api/strategies/pause-all`, {
+      method: 'POST',
+    })
+    if (!res.ok) throw new Error('Failed to pause all strategies')
+    return res.json()
+  },
+
+  async stopAllStrategies() {
+    const res = await fetch(`${ORCHESTRATOR_URL}/api/strategies/stop-all`, {
+      method: 'POST',
+    })
+    if (!res.ok) throw new Error('Failed to stop all strategies')
     return res.json()
   },
 }

@@ -18,7 +18,7 @@ interface Market {
   title: string;
   platform: Platform;
   currentPrice: number;
-  priceChange24h: number;
+  priceChange24h?: number;
   volume24h: number;
   liquidity: number;
   endDate?: string;
@@ -198,7 +198,7 @@ export default function TradePage() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs defaultValue="new-trade" value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="new-trade">
               <ArrowLeftRight className="w-4 h-4 mr-2" />
@@ -233,11 +233,11 @@ export default function TradePage() {
               />
             ) : (
               <TradeForm
-                markets={markets}
+                markets={markets as any}
                 isLoadingMarkets={isLoadingMarkets}
                 onSearch={handleSearch}
-                onPreview={handlePreview}
-                onExecute={handleExecute}
+                onPreview={handlePreview as any}
+                onExecute={handleExecute as any}
               />
             )}
           </TabsContent>

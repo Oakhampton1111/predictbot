@@ -19,7 +19,7 @@ function useTabsContext() {
 }
 
 interface TabsProps {
-  defaultValue: string;
+  defaultValue?: string;
   value?: string;
   onValueChange?: (value: string) => void;
   className?: string;
@@ -27,7 +27,7 @@ interface TabsProps {
 }
 
 export function Tabs({
-  defaultValue,
+  defaultValue = '',
   value: controlledValue,
   onValueChange,
   className,

@@ -63,7 +63,7 @@ const notificationConfigSchema = z.object({
 
 interface ConfigFormProps {
   section: 'risk' | 'strategies' | 'llm' | 'notifications';
-  initialData: RiskConfig | StrategyConfig | LLMConfig | NotificationConfig;
+  initialData: any;
   onSave: (data: unknown) => Promise<void>;
   onReset: () => void;
 }
@@ -90,7 +90,7 @@ export function ConfigForm({ section, initialData, onSave, onReset }: ConfigForm
     formState: { errors, isDirty, isSubmitting },
   } = useForm({
     resolver: zodResolver(getSchema()),
-    defaultValues: initialData,
+    defaultValues: initialData as any,
   });
 
   const watchedValues = watch();
@@ -100,7 +100,7 @@ export function ConfigForm({ section, initialData, onSave, onReset }: ConfigForm
   };
 
   const handleReset = () => {
-    reset(initialData);
+    reset(initialData as any);
     onReset();
   };
 

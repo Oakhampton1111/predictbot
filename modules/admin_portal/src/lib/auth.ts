@@ -10,6 +10,7 @@ declare module 'next-auth' {
     user: {
       id: string;
       username: string;
+      email?: string;
       role: Role;
     };
   }
@@ -17,6 +18,7 @@ declare module 'next-auth' {
   interface User {
     id: string;
     username: string;
+    email?: string;
     role: Role;
   }
 }
@@ -167,7 +169,7 @@ export async function logAuditAction(
         userId,
         action,
         resource,
-        details: details || {},
+        details: details ? JSON.parse(JSON.stringify(details)) : undefined,
         ipAddress: request?.ip,
         userAgent: request?.userAgent,
       },

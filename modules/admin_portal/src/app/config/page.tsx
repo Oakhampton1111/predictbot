@@ -131,7 +131,7 @@ export default function ConfigPage() {
     queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
   };
 
-  const getConfigData = () => {
+  const getConfigData = (): any => {
     switch (activeTab) {
       case 'risk':
         return config.risk;
@@ -142,7 +142,7 @@ export default function ConfigPage() {
       case 'notifications':
         return config.notifications;
       default:
-        return {};
+        return config.risk;
     }
   };
 

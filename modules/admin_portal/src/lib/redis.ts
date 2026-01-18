@@ -9,9 +9,9 @@ function createRedisClient(): Redis {
   
   const client = new Redis(redisUrl, {
     maxRetriesPerRequest: 3,
-    retryDelayOnFailover: 100,
+    retryStrategy: (times: number) => Math.min(times * 100, 3000),
     lazyConnect: true,
-  });
+  } as any);
 
   client.on('error', (err) => {
     console.error('Redis connection error:', err);
