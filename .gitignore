@@ -119,3 +119,6 @@ config.local.yml
 config.local.yaml
 *.local.yml
 *.local.yaml
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

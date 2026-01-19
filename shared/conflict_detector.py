@@ -15,18 +15,24 @@ This module ensures that multiple strategies don't compete for the same
 markets or exceed risk limits when operating simultaneously.
 """
 
+from __future__ import annotations
+
 import os
 import asyncio
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 import json
 
-try:
+if TYPE_CHECKING:
     import redis.asyncio as redis
+
+try:
+    import redis.asyncio as aioredis
     REDIS_AVAILABLE = True
 except ImportError:
+    aioredis = None  # type: ignore
     REDIS_AVAILABLE = False
 
 try:
@@ -200,7 +206,7 @@ class ConflictDetector:
         self.event_bus = event_bus
         
         self.redis_url = redis_url or os.environ.get("REDIS_URL", "redis://localhost:6379")
-        self._redis: Optional[redis.Redis] = None
+        self._redis: Optional[Any] = None  # redis.Redis when available
         
         # Configuration
         self.config = config or {}
@@ -223,14 +229,14 @@ class ConflictDetector:
         
         self.logger.info("Conflict detector initialized")
     
-    async def _get_redis(self) -> Optional[redis.Redis]:
+    async def _get_redis(self) -> Optional[Any]:
         """Get Redis connection."""
-        if not REDIS_AVAILABLE:
+        if not REDIS_AVAILABLE or aioredis is None:
             return None
         
         if self._redis is None:
             try:
-                self._redis = redis.from_url(self.redis_url)
+                self._redis = aioredis.from_url(self.redis_url)
                 await self._redis.ping()
             except Exception as e:
                 self.logger.warning(f"Redis connection failed, using local fallback: {e}")
